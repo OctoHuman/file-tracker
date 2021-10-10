@@ -53,7 +53,10 @@ class FileMetadataHistoryLog:
     Output file contains a CSV representing changes and reasons for each
     modified file in the database.
     """
-    def __init__(self, log_path, gzip_compress=True):
+    def __init__(self,
+                 log_path: Path,
+                 gzip_compress: bool=True
+                ) -> "FileMetadataHistoryLog":
         """
         Creates a file metadata history logger.
 
@@ -87,13 +90,13 @@ class FileMetadataHistoryLog:
         self._csv_writer = csv.DictWriter(self._fd, fieldnames=_CSV_HEADER)
         self._csv_writer.writeheader()
     
-    def __enter__(self):
+    def __enter__(self) -> "FileMetadataHistoryLog":
         return self
     
-    def __exit__(self, exc_type, exc_value, traceback):
+    def __exit__(self, exc_type, exc_value, traceback) -> None:
         self.close()
 
-    def add(self, action, reason, file):
+    def add(self, action: str, reason: str, file: FileMetadata) -> None:
         """
         Add an action to the log file.
 
@@ -133,7 +136,7 @@ class FileMetadataHistoryLog:
 
         self._csv_writer.writerow(csv_dict)
     
-    def close(self):
+    def close(self) -> None:
         """Closes log file."""
         if self._closed:
             return

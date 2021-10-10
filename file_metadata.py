@@ -34,7 +34,7 @@ class FileMetadata:
           The filesystem ID that the file is stored on. This ID is unique per
           filesystem.
     """
-    def __init__(self, path):
+    def __init__(self, path: Path) -> "FileMetadata":
         """
         Use given `Path` object to init FileMetadata object.
 
@@ -62,7 +62,7 @@ class FileMetadata:
         self._hash = None
         self._fs_id = None
 
-    def as_sql_dict(self, include_hash=False):
+    def as_sql_dict(self, include_hash: bool=False) -> dict:
         """
         Returns all metadata about the file as a dict.
         
@@ -85,7 +85,7 @@ class FileMetadata:
         }
 
     @property
-    def hash(self):
+    def hash(self) -> bytes:
         """The hash of the file as a `bytes` object."""
         if self._hash is not None:
             return self._hash
@@ -103,22 +103,22 @@ class FileMetadata:
             return self._hash
 
     @property
-    def path(self):
+    def path(self) -> Path:
         """The path of the file, as a `Path` object."""
         return self._path
     
     @property
-    def size(self):
+    def size(self) -> int:
         """The size of the file in bytes."""
         return self._size
     
     @property
-    def mtime(self):
+    def mtime(self) -> int:
         """The time of last modification of the file."""
         return self._mtime
     
     @property
-    def fs_id(self):
+    def fs_id(self) -> int:
         """An int representing a unique ID for the filesystem the file is on."""
         if self._fs_id is not None:
             return self._fs_id
@@ -138,7 +138,7 @@ class DbFileMetadata(FileMetadata):
     Attributes:
         See `FileMetadata`'s attributes.
     """
-    def __init__(self, file_dict):
+    def __init__(self, file_dict: dict) -> "DbFileMetadata":
         """
         Inits a `DbFileMetadata` object based upon values in given `file_dict`.
         
@@ -155,11 +155,11 @@ class DbFileMetadata(FileMetadata):
 
     # We should never need to calculate a hash from a DbFile
     @property
-    def hash(self):
+    def hash(self) -> bytes:
         """See base class."""
         return self._hash
 
     @property
-    def fs_id(self):
+    def fs_id(self) -> int:
         """See base class."""
         return self._fs_id

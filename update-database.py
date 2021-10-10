@@ -8,7 +8,7 @@ import time
 from argparse import ArgumentParser
 from pathlib import Path
 
-import logger
+from logger import Logger
 import utils
 from file_metadata import FileMetadata
 from file_metadata_db import FileMetadataDb
@@ -48,7 +48,7 @@ def main():
     log_file = log_paths["log"]
     history_csv_file = log_paths["csv"]
 
-    with logger.Logger(log_file, mirror_to_stdout=False) as log:
+    with Logger(log_file, mirror_to_stdout=False) as log:
         with FileMetadataHistoryLog(history_csv_file) as history:
             with FileMetadataDb(db_path, readonly=False) as db:
                 prune_deleted_files(db, filesystems, log, history)
@@ -66,7 +66,11 @@ def main():
             log.log(f"File errors: {files_error}")
 
 
-def register_new_files(db, filesystems, log, history):
+def register_new_files(db: FileMetadataDb,
+                       filesystems: dict[str, int],
+                       log: Logger,
+                       history: FileMetadataHistoryLog
+                      ) -> None:
     """
     Iterate over all files in `filesystems` and adds/updates them in the `db`.
 
@@ -74,7 +78,9 @@ def register_new_files(db, filesystems, log, history):
         db:
           The `FileMetadataDb` to update with new metadata.
         filesystems:
-          A list of paths as strings to recurse upon.
+          A dict of keys where each key is a string representing a
+          filesystem/directory, and each value corresponds to that filesystems
+          fsid.
         log:
           A `Logger` object to write all logs to, such as errors, new files,
           updated files, or skipped files.
@@ -117,7 +123,11 @@ def register_new_files(db, filesystems, log, history):
                 files_skipped += 1
 
 
-def prune_deleted_files(db, filesystems, log, history):
+def prune_deleted_files(db: FileMetadataDb,
+                        filesystems: dict[str, int],
+                        log: Logger,
+                        history: FileMetadataHistoryLog
+                       ) -> None:
     """
     Prunes nonexistant files from the database.
     
@@ -129,7 +139,9 @@ def prune_deleted_files(db, filesystems, log, history):
         db:
           The `FileMetadataDb` to update with new metadata.
         filesystems:
-          A list of paths as strings to recurse upon.
+          A dict of keys where each key is a string representing a
+          filesystem/directory, and each value corresponds to that filesystems
+          fsid.
         log:
           A `Logger` object to write all logs to, such as warnings or file
           deltions.
@@ -154,7 +166,11 @@ def prune_deleted_files(db, filesystems, log, history):
         
     log.log(f"Pruning complete with {files_deleted} files deleted.", mirror_to_stdout=True)
 
-def log_change(history, action, reason, file):
+def log_change(history: FileMetadataHistoryLog,
+               action: str,
+               reason: str,
+               file: FileMetadata
+              ) -> None:
     """
     A simple helper that adds changes to history log, as well as prints the
     change to the console.
@@ -174,12 +190,12 @@ def log_change(history, action, reason, file):
     history.add(action, reason, file)
     print(f"{action.upper()}: {reason}, {file.path}")
 
-def log_permission_error(log, err):
+def log_permission_error(log: Logger, err: PermissionError) -> None:
     global files_error
     log.error(f"Permission Error: {err}")
     files_error += 1
 
-def validate_filesystem_mapping(filesystems):
+def validate_filesystem_mapping(filesystems: dict[str, int]) -> None:
     """
     Ensures that all filesystems given correlate with the expected filesystem
     ID stored in the config file.
@@ -194,7 +210,9 @@ def validate_filesystem_mapping(filesystems):
         if expected_fsid != fsid:
             raise ValueError(f"fsid mismatch found in config file for filesystem {filesystem}. Expected: {expected_fsid}, actual: {fsid}.")
 
-def has_file_changed(file_metadata_1, file_metadata_2):
+def has_file_changed(file_metadata_1: FileMetadata,
+                     file_metadata_2: FileMetadata
+                    ) -> bool:
     """Detects if a file changed, given two `FileMetadata` objects."""
     if file_metadata_1.mtime != file_metadata_2.mtime:
         return True
@@ -204,7 +222,7 @@ def has_file_changed(file_metadata_1, file_metadata_2):
         return True
     return False
 
-def read_config(config_file):
+def read_config(config_file: Path) -> dict:
     """
     Reads and validates the given `config_file` path. Returns a dict
     representing the config.
@@ -243,7 +261,7 @@ def read_config(config_file):
         "log_folder": log_folder
     }
 
-def create_log_file_paths(log_folder):
+def create_log_file_paths(log_folder: Path) -> dict[str, Path]:
     """
     Creates `Path` objects representing where to save log files to. This
     function creates unique file names based upon system time, and ensures that

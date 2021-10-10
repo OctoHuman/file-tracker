@@ -3,18 +3,20 @@
 import re
 import sys
 import os
+import types
 from pathlib import Path
+from typing import Generator
 
 SQL_SAFE_CHARS_REGEX = "^[A-z0-9-]{1,100}$"
 
-def assert_sql_safe_chars(string):
+def assert_sql_safe_chars(string: str) -> None:
     """Raises an exception if given string contains SQL unsafe chars."""
     if not isinstance(string, str):
         raise TypeError("Argument isn't a string.")
     if not re.fullmatch(SQL_SAFE_CHARS_REGEX, string):
         raise ValueError(f"Argument has unsafe characters: ${string}")
 
-def is_sqlite_db(path):
+def is_sqlite_db(path: Path) -> bool:
     """Checks if given file contains a SQLite database."""
     if not path.is_file():
         raise FileNotFoundError(f"Path given doesn't exist: {path}")
@@ -31,7 +33,7 @@ def is_sqlite_db(path):
     else:
         return False
 
-def get_fsid(path):
+def get_fsid(path: Path) -> int:
     """Gets the filesystem ID of a given path."""
     if sys.platform == "linux":
         return os.statvfs(path).f_fsid
@@ -40,7 +42,7 @@ def get_fsid(path):
     else:
         raise NotImplementedError(f"Unsupported platform: {sys.platform}")
 
-def dump_database(path):
+def dump_database(path: Path) -> None:
     """Dumps the contents of a `FileMetadataDb` into stdout as a table."""
     from file_metadata_db import FileMetadataDb
     path = Path(path)
@@ -56,7 +58,9 @@ def dump_database(path):
             print(f"{f_path} | {f_hash} | {f_size} | {f_mtime} | {f_fs_id}")
     print("Done.")
 
-def walk_files(path, error_handler):
+def walk_files(path: str | Path,
+               error_handler: types.FunctionType
+              ) -> Generator[str]:
     """
     Simplifies `os.walk` into a function that only yields file paths.
     

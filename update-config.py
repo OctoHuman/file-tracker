@@ -68,7 +68,7 @@ def main():
     current_config["config_last_changed"] = current_time()
     write_config(current_config, config_file)
 
-def add_filesystems(config, add_fs):
+def add_filesystems(config: dict, add_fs: list[Path]) -> None:
     """
     Adds a new filesystem/directory to track to the config.
     
@@ -88,7 +88,7 @@ def add_filesystems(config, add_fs):
         else:
             print(f"Warning: Filesystem '{fs}' already exists in config. Ignoring...")
 
-def remove_filesystems(config, remove_fs):
+def remove_filesystems(config: dict, remove_fs: list[Path]) -> None:
     """Removes a filesystem/directory from the config."""
     print("Removing filesystems...")
     for fs in remove_fs:
@@ -99,7 +99,7 @@ def remove_filesystems(config, remove_fs):
         else:
             print(f"Warning: Filesystem '{fs}' wasn't found in the config. Ignoring...")
 
-def update_database_path(config, database_path):
+def update_database_path(config: dict, database_path: Path) -> None:
     """
     Change the path to the file metadata database
     
@@ -121,7 +121,7 @@ def update_database_path(config, database_path):
     
     config["database"] = str(database_path.resolve(strict=True))
 
-def update_log_folder(config, log_folder):
+def update_log_folder(config: dict, log_folder: Path) -> None:
     """Update the folder to store log files in."""
     print("Updating log folder...")
 
@@ -132,7 +132,7 @@ def update_log_folder(config, log_folder):
 
     config["log_folder"] = str(log_folder.resolve(strict=True))
 
-def read_config(config_file):
+def read_config(config_file: Path) -> dict:
     """
     Read the config file at the given path. Returns the parsed JSON file.
     
@@ -151,14 +151,14 @@ def read_config(config_file):
     else:
         return config
 
-def write_config(config, config_file):
+def write_config(config: dict, config_file: Path) -> None:
     """Dumps the given config file to a string, and writes it to disk."""
     print("Writing new config...")
     with config_file.open(mode="wt") as f:
         json.dump(config, f, indent=4)
     print("Done!")
 
-def create_config_template():
+def create_config_template() -> dict:
     """Returns a config template."""
     return {
         "config_last_changed": current_time(),
@@ -167,11 +167,11 @@ def create_config_template():
         "filesystems_to_scan": {}
     }
 
-def current_time():
+def current_time() -> int:
     """Returns the current time in milliseconds."""
     return floor(time.time() * 1000)
 
-def create_new_database(database_path):
+def create_new_database(database_path: Path) -> None:
     """Create a new, empty `FileMetadataDb`."""
     print("Creating new database...")
     # Creates new database, and closes it after it initializes itself.

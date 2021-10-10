@@ -21,7 +21,11 @@ class Logger:
           A `bool` representing whether or not to write all log entries to
           stdout. This attribute can be changed even after the class is inited.
     """
-    def __init__(self, log_file, log_exception=True, mirror_to_stdout=False):
+    def __init__(self,
+                 log_file: Path,
+                 log_exception: bool=True,
+                 mirror_to_stdout: bool=False
+                ) -> "Logger":
         """
         Inits a Logger for the given `log_file`.
 
@@ -52,10 +56,10 @@ class Logger:
         self._fd = log_file.open(mode="xt", encoding="utf8")
         self._fd.write(f"[{get_time()}] START OF LOG\n")
     
-    def __enter__(self):
+    def __enter__(self) -> "Logger":
         return self
     
-    def __exit__(self, exc_type, exc_value, traceback):
+    def __exit__(self, exc_type, exc_value, traceback) -> None:
         if self._closed:
             return
 
@@ -66,7 +70,7 @@ class Logger:
             self.error("Closing due to uncaught exception.")
         self.close()
 
-    def _write(self, text, mirror_to_stdout=False):
+    def _write(self, text: str, mirror_to_stdout: bool=False) -> None:
         """Lets us write to log without any severity prefixes."""
         if self._closed:
             raise ValueError("Can't write to log because it is already closed.")
@@ -76,17 +80,17 @@ class Logger:
             sys.stdout.write(text)
     
     @property
-    def mirror_to_stdout(self):
+    def mirror_to_stdout(self) -> bool:
         """A `bool` representing whether to write log entries to sys.stdout."""
         return self._mirror_to_stdout
     
     @mirror_to_stdout.setter
-    def mirror_to_stdout(self, value):
+    def mirror_to_stdout(self, value: bool) -> None:
         if not isinstance(value, bool):
             raise TypeError("mirror_to_stdout must be a bool.")
         self._mirror_to_stdout = value
 
-    def log(self, text, **kwargs):
+    def log(self, text: str, **kwargs) -> None:
         """
         Logs text.
         
@@ -96,7 +100,7 @@ class Logger:
         """
         self._write(text + "\n", **kwargs)
     
-    def warn(self, text, **kwargs):
+    def warn(self, text: str, **kwargs) -> None:
         """
         Logs a warning.
         
@@ -106,7 +110,7 @@ class Logger:
         """
         self._write("WARNING: " + text + "\n", **kwargs)
 
-    def error(self, text, **kwargs):
+    def error(self, text: str, **kwargs) -> None:
         """
         Logs an error.
         
@@ -116,7 +120,7 @@ class Logger:
         """
         self._write("ERROR: " + text + "\n", **kwargs)
 
-    def close(self):
+    def close(self) -> None:
         """Close the log file."""
         if self._closed:
             return
@@ -125,6 +129,6 @@ class Logger:
         self._fd.close()
         self._closed = True
 
-def get_time():
+def get_time() -> str:
     """Returns the current time in a nicely formatted string."""
     return time.strftime("%Y-%m-%d %H:%M:%S")

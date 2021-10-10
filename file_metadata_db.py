@@ -5,6 +5,7 @@ Handles creation and modification of file metadata in a centralized database.
 import sqlite3
 import sys
 from pathlib import Path
+from typing import Generator
 from file_metadata import FileMetadata, DbFileMetadata
 
 class FileMetadataDb:
@@ -26,7 +27,11 @@ class FileMetadataDb:
           database.
     """
 
-    def __init__(self, db_path: Path, readonly: bool=True, create_new_db: bool=False) -> "FileMetadataDb":
+    def __init__(self,
+                 db_path: Path,
+                 readonly: bool=True,
+                 create_new_db: bool=False
+                ) -> "FileMetadataDb":
         """
         Opens an existing database, or creates and initializes a new
         one.
@@ -70,13 +75,13 @@ class FileMetadataDb:
 
         self._conn.row_factory = sqlite3.Row
 
-    def __enter__(self):
+    def __enter__(self) -> "FileMetadataDb":
         return self
 
-    def __exit__(self, exc_type, exc_value, traceback):
+    def __exit__(self, exc_type, exc_value, traceback) -> None:
         self.close()
 
-    def get_file(self, file_metadata):
+    def get_file(self, file_metadata: FileMetadata) -> DbFileMetadata | None:
         """
         Finds a file in the database matching the path of given `file_metadata`.
         """
@@ -92,7 +97,7 @@ class FileMetadataDb:
         else:
             return DbFileMetadata(result)
 
-    def does_exist(self, file_metadata):
+    def does_exist(self, file_metadata: FileMetadata) -> bool:
         """
         Checks if a file exists in the database matching the path of given
         `file_metadata`.
@@ -106,7 +111,7 @@ class FileMetadataDb:
         cur.close()
         return result is not None
 
-    def add_file(self, file_metadata):
+    def add_file(self, file_metadata: FileMetadata) -> None:
         """Adds the file `file_metadata` to the database."""
         if self._readonly:
             raise AssertionError("Can't add a new file while in read-only mode.")
@@ -116,7 +121,7 @@ class FileMetadataDb:
         sql_dict = file_metadata.as_sql_dict(include_hash=True)
         self._conn.execute("INSERT INTO files (path, hash, size, mtime, fs_id) VALUES (:path, :hash, :size, :mtime, :fs_id)", sql_dict)
 
-    def update_file(self, file_metadata):
+    def update_file(self, file_metadata: FileMetadata) -> None:
         """
         Updates an existing file's metadata based on given `file_metadata`.
         """
@@ -132,7 +137,7 @@ class FileMetadataDb:
         if cur.rowcount < 1:
             raise FileNotFoundError(f"Updating file failed because it doesn't exist in the database: {file_metadata.path}")
 
-    def remove_file(self, file_metadata):
+    def remove_file(self, file_metadata: FileMetadata) -> None:
         """
         Removes a file from the database, based on path in given
         `file_metadata`.
@@ -149,8 +154,11 @@ class FileMetadataDb:
         if cur.rowcount < 1:
             raise FileNotFoundError(f"Deleting file failed because it doesn't exist in the database: {file_metadata.path}")
 
-    def get_all_files(self):
+    def get_all_files(self) -> Generator[DbFileMetadata]:
         """Returns a generator that yields every file in the database."""
+        # TODO: If no files are in the database, the break runs first, and None
+        # is returned. This isn't consistent with the type hint, and could break
+        # code expecting this to return a generator.
         cur = self._conn.cursor()
         cur.execute("SELECT * FROM files")
         while True:
@@ -160,8 +168,11 @@ class FileMetadataDb:
             yield DbFileMetadata(file)
         cur.close()
 
-    def get_files_matching_hash(self, file_hash):
+    def get_files_matching_hash(self, file_hash: bytes) -> Generator[DbFileMetadata]:
         """Finds all files in database that match given hash."""
+        # TODO: If no files are in the database, the break runs first, and None
+        # is returned. This isn't consistent with the type hint, and could break
+        # code expecting this to return a generator.
         if not isinstance(file_hash, bytes):
             raise ValueError("Hash must be a bytes object.")
 
@@ -174,11 +185,11 @@ class FileMetadataDb:
             yield DbFileMetadata(file)
         cur.close()
 
-    def commit(self):
+    def commit(self) -> None:
         """Commits all changes to database."""
         self._conn.commit()
 
-    def close(self):
+    def close(self) -> None:
         """Closes the database."""
         if self._is_closed:
             return
@@ -188,7 +199,7 @@ class FileMetadataDb:
         self._conn.close()
         self._is_closed = True
 
-    def _bootstrap_new_db(self, db_path):
+    def _bootstrap_new_db(self, db_path: Path) -> None:
         if self._readonly:
             raise ValueError("Can't create a new database while in read-only mode.")
         if db_path.exists():
@@ -209,7 +220,7 @@ class FileMetadataDb:
         conn.commit()
         self._conn = conn
 
-    def _connect_to_existing_db(self, db_path):
+    def _connect_to_existing_db(self, db_path: Path) -> None:
         if not db_path.is_file():
             raise FileNotFoundError(f"Database path given doesn't exist: {db_path}")
         uri = db_path.as_uri()
@@ -218,16 +229,16 @@ class FileMetadataDb:
         self._conn = sqlite3.connect(uri, uri=True)
 
     @property
-    def db_path(self):
+    def db_path(self) -> str:
         """The path the database is stored at."""
         return str(self._db_path)
     
     @property
-    def readonly(self):
+    def readonly(self) -> bool:
         """Whether the database is in readonly mode."""
         return self._readonly
 
     @property
-    def in_transaction(self):
+    def in_transaction(self) -> bool:
         """Whether there is any uncommited transactions on the database."""
         return self._conn.in_transaction
