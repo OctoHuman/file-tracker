@@ -1,3 +1,10 @@
+"""
+This script manages updating an validating file metadata tracking configs.
+
+This script outputs config files as standard JSON. It stores data such as which
+filesystems to track, and the path to the file metadata database.
+"""
+
 from argparse import ArgumentParser
 from pathlib import Path
 import time
@@ -62,6 +69,14 @@ def main():
     write_config(current_config, config_file)
 
 def add_filesystems(config, add_fs):
+    """
+    Adds a new filesystem/directory to track to the config.
+    
+    This is done by storing the path to the filesystem/directory, but also the
+    unique filesystem ID, to ensure that if the given filesystem has a mount
+    point on it that contains a different filesystem, it is possible to detect
+    the entry into a new filesystem.
+    """
     print("Registering new filesystems...")
     for fs in add_fs:
         if not fs.is_dir():
@@ -74,6 +89,7 @@ def add_filesystems(config, add_fs):
             print(f"Warning: Filesystem '{fs}' already exists in config. Ignoring...")
 
 def remove_filesystems(config, remove_fs):
+    """Removes a filesystem/directory from the config."""
     print("Removing filesystems...")
     for fs in remove_fs:
         # Don't use 'strict=True' because the filesystem may no longer exist.
@@ -84,6 +100,14 @@ def remove_filesystems(config, remove_fs):
             print(f"Warning: Filesystem '{fs}' wasn't found in the config. Ignoring...")
 
 def update_database_path(config, database_path):
+    """
+    Change the path to the file metadata database
+    
+    Raises:
+        ValueError:
+          The `database_path` given points to something other than a file, or
+          that the file it does point to isn't an SQLite database.
+    """
     print("Updating database path...")
 
     if database_path.exists() and not database_path.is_file():
@@ -98,6 +122,7 @@ def update_database_path(config, database_path):
     config["database"] = str(database_path.resolve(strict=True))
 
 def update_log_folder(config, log_folder):
+    """Update the folder to store log files in."""
     print("Updating log folder...")
 
     if not log_folder.is_dir():
@@ -108,6 +133,14 @@ def update_log_folder(config, log_folder):
     config["log_folder"] = str(log_folder.resolve(strict=True))
 
 def read_config(config_file):
+    """
+    Read the config file at the given path. Returns the parsed JSON file.
+    
+    Raises:
+        ValueError:
+          The parsed JSON file doesn't have the correct properties to be a valid
+          config file.
+    """
     with config_file.open(mode="rt") as f:
         config = json.load(f)
     
@@ -119,12 +152,14 @@ def read_config(config_file):
         return config
 
 def write_config(config, config_file):
+    """Dumps the given config file to a string, and writes it to disk."""
     print("Writing new config...")
     with config_file.open(mode="wt") as f:
         json.dump(config, f, indent=4)
     print("Done!")
 
 def create_config_template():
+    """Returns a config template."""
     return {
         "config_last_changed": current_time(),
         "database": None,
@@ -133,10 +168,11 @@ def create_config_template():
     }
 
 def current_time():
-    # Current time in milliseconds
+    """Returns the current time in milliseconds."""
     return floor(time.time() * 1000)
 
 def create_new_database(database_path):
+    """Create a new, empty `FileMetadataDb`."""
     print("Creating new database...")
     # Creates new database, and closes it after it initializes itself.
     with FileMetadataDb(database_path, readonly=False, create_new_db=True) as db:

@@ -1,9 +1,19 @@
+"""
+Logs file changes, and the reasons behind them.
+
+Attributes:
+    LOG_ACTIONS:
+      A dict, where each key is a valid action that can be done to a file. Each
+      key's value is a list representing valid reasons for that action to be
+      done. For example, the action "update" can have the reason "changed".
+"""
+
 from pathlib import Path
-from file_metadata import FileMetadata
 import csv
 import gzip
+from file_metadata import FileMetadata
 
-CSV_HEADER = ["action", "reason", "path", "new_hash"]
+_CSV_HEADER = ["action", "reason", "path", "new_hash"]
 
 # This dict maps log actions to reason lists
 LOG_ACTIONS = {
@@ -37,7 +47,29 @@ LOG_ACTIONS = {
 # "delete", "nonexistent", path
 
 class FileMetadataHistoryLog:
+    """
+    Logs file changes to a given file.
+
+    Output file contains a CSV representing changes and reasons for each
+    modified file in the database.
+    """
     def __init__(self, log_path, gzip_compress=True):
+        """
+        Creates a file metadata history logger.
+
+        Args:
+            log_path:
+              `Path` of where to save log.
+            gzip_compress:
+              Whether to compress log file with gzip.
+        
+        Raises:
+            TypeError:
+              `log_path` isn't a `Path` object.
+            FileExistsError:
+              A file already exists at `log_path`.
+
+        """
         if not isinstance(log_path, Path):
             raise TypeError("log_path must be a Path object.")
         
@@ -52,7 +84,7 @@ class FileMetadataHistoryLog:
         else:
             self._fd = self._log_path.open(mode="xt", encoding="utf8", newline="")
         
-        self._csv_writer = csv.DictWriter(self._fd, fieldnames=CSV_HEADER)
+        self._csv_writer = csv.DictWriter(self._fd, fieldnames=_CSV_HEADER)
         self._csv_writer.writeheader()
     
     def __enter__(self):
@@ -62,6 +94,24 @@ class FileMetadataHistoryLog:
         self.close()
 
     def add(self, action, reason, file):
+        """
+        Add an action to the log file.
+
+        Args:
+            action:
+              The action that should be logged. Valid actions are stored in the
+              module's LOG_ACTIONS attribute.
+            reason:
+              The reason the action was performed. Valid reasons are stored as
+              in a list on the module's corresponding LOG_ACTIONS attribute.
+            file:
+              A `FileMetadata` object representing the file this log entry
+              applies to.
+
+        Raises:
+            ValueError:
+              Function was supplied a bad action/reason pair.
+        """
         if self._closed:
             raise ValueError("Can't write new log entry: log has been closed.")
         
@@ -84,6 +134,7 @@ class FileMetadataHistoryLog:
         self._csv_writer.writerow(csv_dict)
     
     def close(self):
+        """Closes log file."""
         if self._closed:
             return
         

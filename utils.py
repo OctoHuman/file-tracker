@@ -1,3 +1,5 @@
+"""Common utils"""
+
 import re
 import sys
 import os
@@ -6,12 +8,14 @@ from pathlib import Path
 SQL_SAFE_CHARS_REGEX = "^[A-z0-9-]{1,100}$"
 
 def assert_sql_safe_chars(string):
+    """Raises an exception if given string contains SQL unsafe chars."""
     if not isinstance(string, str):
         raise TypeError("Argument isn't a string.")
     if not re.fullmatch(SQL_SAFE_CHARS_REGEX, string):
         raise ValueError(f"Argument has unsafe characters: ${string}")
 
 def is_sqlite_db(path):
+    """Checks if given file contains a SQLite database."""
     if not path.is_file():
         raise FileNotFoundError(f"Path given doesn't exist: {path}")
 
@@ -28,6 +32,7 @@ def is_sqlite_db(path):
         return False
 
 def get_fsid(path):
+    """Gets the filesystem ID of a given path."""
     if sys.platform == "linux":
         return os.statvfs(path).f_fsid
     elif sys.platform == "win32":
@@ -36,6 +41,7 @@ def get_fsid(path):
         raise NotImplementedError(f"Unsupported platform: {sys.platform}")
 
 def dump_database(path):
+    """Dumps the contents of a `FileMetadataDb` into stdout as a table."""
     from file_metadata_db import FileMetadataDb
     path = Path(path)
     print("Path".ljust(80) + " | " + "Hash".ljust(64) + " | " + "Size".ljust(10) + " | " + "mtime".ljust(18) + " | " + "fs_id".ljust(10))
@@ -51,6 +57,17 @@ def dump_database(path):
     print("Done.")
 
 def walk_files(path, error_handler):
+    """
+    Simplifies `os.walk` into a function that only yields file paths.
+    
+    Arguments:
+        path:
+          Path to walk recursively.
+        error_handler:
+          A function to call when there is an error iterating over the
+          directories (such as a PermissionError). The given function is called
+          with 1 argument, an exception representing the error that occurred.
+    """
     if not callable(error_handler):
         raise TypeError("error_handler must be a function.")
         

@@ -1,3 +1,8 @@
+"""
+This script iterates throughout a filesystem/directory based upon the given
+config, and updates a corresponding database with file metadata.
+"""
+
 import json
 import time
 from argparse import ArgumentParser
@@ -62,6 +67,20 @@ def main():
 
 
 def register_new_files(db, filesystems, log, history):
+    """
+    Iterate over all files in `filesystems` and adds/updates them in the `db`.
+
+    Arguments:
+        db:
+          The `FileMetadataDb` to update with new metadata.
+        filesystems:
+          A list of paths as strings to recurse upon.
+        log:
+          A `Logger` object to write all logs to, such as errors, new files,
+          updated files, or skipped files.
+        history:
+          A `FileMetadataHistoryLog` object to log all file changes to.
+    """
     global files_added, files_skipped, files_updated, files_error
     for fs in filesystems:
         log.log(f"Iterating over filesystem '{fs}'...", mirror_to_stdout=True)
@@ -99,6 +118,24 @@ def register_new_files(db, filesystems, log, history):
 
 
 def prune_deleted_files(db, filesystems, log, history):
+    """
+    Prunes nonexistant files from the database.
+    
+    Iterates over all files in the `db` and checks if they all still exist on
+    disk, and if so, checks that they are in one of the allowed filesystem IDs.
+    If either are false, it removes the file from the database.
+
+    Arguments:
+        db:
+          The `FileMetadataDb` to update with new metadata.
+        filesystems:
+          A list of paths as strings to recurse upon.
+        log:
+          A `Logger` object to write all logs to, such as warnings or file
+          deltions.
+        history:
+          A `FileMetadataHistoryLog` object to log all file changes to.
+    """
     global files_deleted
     log.log("Pruning database of deleted files...", mirror_to_stdout=True)
     allowed_fsids = filesystems.values()
@@ -118,8 +155,21 @@ def prune_deleted_files(db, filesystems, log, history):
     log.log(f"Pruning complete with {files_deleted} files deleted.", mirror_to_stdout=True)
 
 def log_change(history, action, reason, file):
-    # A simple helper that adds change to history log,
-    # as well as prints the change to the console.
+    """
+    A simple helper that adds changes to history log, as well as prints the
+    change to the console.
+
+    Arguments:
+        history:
+          A `FileMetadataHistoryLog` object to log all file changes to.
+        action:
+          The action performed on the given file. (See `FileMetadataHistoryLog`
+          for more info.)
+        reason:
+          The reason the action was performed on the given file.
+        file:
+          A `FileMetadata` object representing the file that changed.
+    """
 
     history.add(action, reason, file)
     print(f"{action.upper()}: {reason}, {file.path}")
@@ -130,6 +180,10 @@ def log_permission_error(log, err):
     files_error += 1
 
 def validate_filesystem_mapping(filesystems):
+    """
+    Ensures that all filesystems given correlate with the expected filesystem
+    ID stored in the config file.
+    """
     for filesystem_str in filesystems:
         filesystem = Path(filesystem_str)
         if not filesystem.is_dir():
@@ -141,6 +195,7 @@ def validate_filesystem_mapping(filesystems):
             raise ValueError(f"fsid mismatch found in config file for filesystem {filesystem}. Expected: {expected_fsid}, actual: {fsid}.")
 
 def has_file_changed(file_metadata_1, file_metadata_2):
+    """Detects if a file changed, given two `FileMetadata` objects."""
     if file_metadata_1.mtime != file_metadata_2.mtime:
         return True
     if file_metadata_1.size != file_metadata_2.size:
@@ -150,6 +205,10 @@ def has_file_changed(file_metadata_1, file_metadata_2):
     return False
 
 def read_config(config_file):
+    """
+    Reads and validates the given `config_file` path. Returns a dict
+    representing the config.
+    """
     if not config_file.is_file():
         raise FileNotFoundError("Config file specified doesn't exist.")
 
@@ -185,6 +244,22 @@ def read_config(config_file):
     }
 
 def create_log_file_paths(log_folder):
+    """
+    Creates `Path` objects representing where to save log files to. This
+    function creates unique file names based upon system time, and ensures that
+    there isn't a collision between the newly generated names and past log
+    files.
+
+    Arguments:
+        log_folder:
+          A `Path` object representing the folder in which the log files should
+          be saved.
+
+    Returns:
+        A dict with keys `log` and `csv`. Each key's value represents a unique
+        path where the plain text logs and the CSV file metadata history can be
+        saved.
+    """
     if not log_folder.is_dir():
         raise NotADirectoryError("Log folder isn't a directory.")
     log_file_base = log_folder / time.strftime("%Y-%m-%d %H-%M-%S")

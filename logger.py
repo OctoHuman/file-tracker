@@ -1,10 +1,45 @@
+"""
+This module allows for easy logging to disk.
+"""
+
 from pathlib import Path
 import time
 import sys
 from traceback import format_exception
 
 class Logger:
+    """
+    Logs info from program runtime to disk.
+
+    This class lets you log text, and classify log entries as `log`, `warn`, or
+    `error`, depending on severity. In addition, if this class is used with
+    Python's `with` syntax, any Exceptions raised inside of the `with` block
+    will be logged (but not caught).
+
+    Attributes:
+        mirror_to_stdout:
+          A `bool` representing whether or not to write all log entries to
+          stdout. This attribute can be changed even after the class is inited.
+    """
     def __init__(self, log_file, log_exception=True, mirror_to_stdout=False):
+        """
+        Inits a Logger for the given `log_file`.
+
+        Arguments:
+            log_file:
+              A `Path` object representing where to store the log file.
+            log_exceptions:
+              A `bool` representing whether to log exceptions that occur within
+              the `with` block the `Logger` is instantiated from. Does nothing
+              if this `Logger` wasn't created using the `with` syntax.
+            mirror_to_stdout:
+              If `True`, writes all log entries to sys.stdout in addition to the
+              usual log file.
+        
+        Raises:
+            FileExistsError:
+              The `log_file` given already exists.
+        """
         if not isinstance(log_file, Path):
             raise TypeError("Log file must be of type path.")
         if log_file.exists():
@@ -32,6 +67,7 @@ class Logger:
         self.close()
 
     def _write(self, text, mirror_to_stdout=False):
+        """Lets us write to log without any severity prefixes."""
         if self._closed:
             raise ValueError("Can't write to log because it is already closed.")
         
@@ -41,6 +77,7 @@ class Logger:
     
     @property
     def mirror_to_stdout(self):
+        """A `bool` representing whether to write log entries to sys.stdout."""
         return self._mirror_to_stdout
     
     @mirror_to_stdout.setter
@@ -50,15 +87,37 @@ class Logger:
         self._mirror_to_stdout = value
 
     def log(self, text, **kwargs):
+        """
+        Logs text.
+        
+        Arguments:
+            mirror_to_stdout:
+              See `Logger.mirror_to_stdout`.
+        """
         self._write(text + "\n", **kwargs)
     
     def warn(self, text, **kwargs):
+        """
+        Logs a warning.
+        
+        Arguments:
+            mirror_to_stdout:
+              See `Logger.mirror_to_stdout`.
+        """
         self._write("WARNING: " + text + "\n", **kwargs)
 
     def error(self, text, **kwargs):
+        """
+        Logs an error.
+        
+        Arguments:
+            mirror_to_stdout:
+              See `Logger.mirror_to_stdout`.
+        """
         self._write("ERROR: " + text + "\n", **kwargs)
 
     def close(self):
+        """Close the log file."""
         if self._closed:
             return
         
@@ -67,4 +126,5 @@ class Logger:
         self._closed = True
 
 def get_time():
+    """Returns the current time in a nicely formatted string."""
     return time.strftime("%Y-%m-%d %H:%M:%S")
