@@ -193,7 +193,7 @@ class FileMetadataDb:
         """Closes the database."""
         if self._is_closed:
             return
-        
+
         if self._conn.in_transaction:
             print("WARNING: Closing database with unsaved transactions.", file=sys.stderr)
         self._conn.close()
@@ -204,7 +204,7 @@ class FileMetadataDb:
             raise ValueError("Can't create a new database while in read-only mode.")
         if db_path.exists():
             raise FileExistsError("Database path given already exists. Won't clobber.")
-        
+
         # Setup the required tables for the script to work.
 
         conn = sqlite3.connect(db_path)
@@ -232,7 +232,7 @@ class FileMetadataDb:
     def db_path(self) -> str:
         """The path the database is stored at."""
         return str(self._db_path)
-    
+
     @property
     def readonly(self) -> bool:
         """Whether the database is in readonly mode."""

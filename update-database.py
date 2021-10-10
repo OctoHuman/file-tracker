@@ -53,12 +53,12 @@ def main():
             with FileMetadataDb(db_path, readonly=False) as db:
                 prune_deleted_files(db, filesystems, log, history)
                 register_new_files(db, filesystems, log, history)
-                
+
                 # Want the following lines to be printed to the console as well as logged.
                 log.mirror_to_stdout = True
                 log.log("Finished updating database. Committing changes...")
                 db.commit()
-            
+
             log.log(f"Files added: {files_added}")
             log.log(f"Files updated: {files_updated}")
             log.log(f"Files deleted: {files_deleted}")
@@ -117,7 +117,7 @@ def register_new_files(db: FileMetadataDb,
                     files_updated += 1
                 except PermissionError as err:
                     log_permission_error(log, err)
-            
+
             else:
                 log_change(history, "skip", "unchanged", file_metadata)
                 files_skipped += 1
@@ -130,7 +130,7 @@ def prune_deleted_files(db: FileMetadataDb,
                        ) -> None:
     """
     Prunes nonexistant files from the database.
-    
+
     Iterates over all files in the `db` and checks if they all still exist on
     disk, and if so, checks that they are in one of the allowed filesystem IDs.
     If either are false, it removes the file from the database.
@@ -163,7 +163,7 @@ def prune_deleted_files(db: FileMetadataDb,
             db.remove_file(file)
             log_change(history, "delete", "nonexistent", file)
             files_deleted += 1
-        
+
     log.log(f"Pruning complete with {files_deleted} files deleted.", mirror_to_stdout=True)
 
 def log_change(history: FileMetadataHistoryLog,
@@ -204,7 +204,7 @@ def validate_filesystem_mapping(filesystems: dict[str, int]) -> None:
         filesystem = Path(filesystem_str)
         if not filesystem.is_dir():
             raise NotADirectoryError(f"A filesystem specified in the config file is not a directory: {filesystem}")
-        
+
         fsid = utils.get_fsid(filesystem)
         expected_fsid = filesystems[filesystem_str]
         if expected_fsid != fsid:
@@ -236,7 +236,7 @@ def read_config(config_file: Path) -> dict:
     db_path = config["database"]
     if not db_path or not isinstance(db_path, str):
         raise TypeError("No database path is specified in the config file.")
-    
+
     db_path = Path(db_path)
     if not utils.is_sqlite_db(db_path):
         raise ValueError("Database specified in config file isn't a valid SQLite database.")
@@ -244,7 +244,7 @@ def read_config(config_file: Path) -> dict:
     log_folder = config["log_folder"]
     if not log_folder or not isinstance(log_folder, str):
         raise ValueError("No log folder specified in config file.")
-    
+
     log_folder = Path(log_folder)
     if not log_folder.is_dir():
         raise NotADirectoryError("Log folder specified in config doesn't exist.")
@@ -287,7 +287,7 @@ def create_log_file_paths(log_folder: Path) -> dict[str, Path]:
 
     if log_file.exists() or csv_file.exists():
         raise FileExistsError("Log file already exists, won't clobber. (Did you run this script twice in one second?)")
-    
+
     return {
         "log": log_file,
         "csv": csv_file

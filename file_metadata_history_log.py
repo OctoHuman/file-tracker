@@ -29,7 +29,7 @@ LOG_ACTIONS = {
         "nonexistent", # File from database couldn't be found on disk
         "invalid_fs_id" # File from database is in a fsid no longer being tracked
     ],
-    
+
     "skip": [
         "unchanged" # File doesn't appear to have been changed
     ],
@@ -42,7 +42,7 @@ LOG_ACTIONS = {
 # "skip", "unexpected_fsid", path
 # "new", "new_file", path, new_hash
 # "updated", "changed", path, new_hash
-# "skip", "unchanged", path 
+# "skip", "unchanged", path
 # "delete", "bad_fsid", path
 # "delete", "nonexistent", path
 
@@ -65,7 +65,7 @@ class FileMetadataHistoryLog:
               `Path` of where to save log.
             gzip_compress:
               Whether to compress log file with gzip.
-        
+
         Raises:
             TypeError:
               `log_path` isn't a `Path` object.
@@ -75,24 +75,24 @@ class FileMetadataHistoryLog:
         """
         if not isinstance(log_path, Path):
             raise TypeError("log_path must be a Path object.")
-        
+
         self._log_path = log_path
         self._closed = False
 
         if self._log_path.exists():
             raise FileExistsError(f"Can't create a new log at '{self._log_path}': File already exists.")
-        
+
         if gzip_compress:
             self._fd = gzip.open(self._log_path, mode="xt", encoding="utf8", newline="")
         else:
             self._fd = self._log_path.open(mode="xt", encoding="utf8", newline="")
-        
+
         self._csv_writer = csv.DictWriter(self._fd, fieldnames=_CSV_HEADER)
         self._csv_writer.writeheader()
-    
+
     def __enter__(self) -> "FileMetadataHistoryLog":
         return self
-    
+
     def __exit__(self, exc_type, exc_value, traceback) -> None:
         self.close()
 
@@ -117,7 +117,7 @@ class FileMetadataHistoryLog:
         """
         if self._closed:
             raise ValueError("Can't write new log entry: log has been closed.")
-        
+
         if not action in LOG_ACTIONS:
             raise ValueError(f"Invalid log action: {action}")
         if not reason in LOG_ACTIONS[action]:
@@ -135,11 +135,11 @@ class FileMetadataHistoryLog:
             csv_dict["new_hash"] = file.hash.hex()
 
         self._csv_writer.writerow(csv_dict)
-    
+
     def close(self) -> None:
         """Closes log file."""
         if self._closed:
             return
-        
+
         self._fd.close()
         self._closed = True

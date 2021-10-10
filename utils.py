@@ -24,10 +24,10 @@ def is_sqlite_db(path: Path) -> bool:
     # SQLite database header is 100 bytes long.
     if path.stat().st_size < 100:
         return False
-    
+
     with path.open(mode="rb") as f:
         header = f.read(16)
-    
+
     if header == b"SQLite format 3\0":
         return True
     else:
@@ -63,7 +63,7 @@ def walk_files(path: str | Path,
               ) -> Generator[str]:
     """
     Simplifies `os.walk` into a function that only yields file paths.
-    
+
     Arguments:
         path:
           Path to walk recursively.
@@ -74,7 +74,7 @@ def walk_files(path: str | Path,
     """
     if not callable(error_handler):
         raise TypeError("error_handler must be a function.")
-        
+
     for root, dirs, files in os.walk(path, onerror=error_handler):
         root = Path(root)
         for file in files:

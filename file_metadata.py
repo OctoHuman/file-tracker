@@ -7,8 +7,6 @@ of a file's metadata.
 
 from pathlib import Path
 import hashlib
-import sys
-import os
 import utils
 
 CHUNK_SIZE = 64000000 #64MB
@@ -24,7 +22,7 @@ class FileMetadata:
     Attributes:
         hash:
           A `bytes` object representing the SHA256 hash of the file.
-        path: 
+        path:
           A `path` object of the files location.
         size:
           File size in bytes.
@@ -41,7 +39,7 @@ class FileMetadata:
         Args:
             path:
               `Path` object representing the file to obtain metadata from.
-        
+
         Raises:
             FileNotFoundError:
               There is no file with the given `path`.
@@ -54,7 +52,7 @@ class FileMetadata:
             raise FileNotFoundError(f"Given path '{path}' is not a file.")
         if path.is_symlink():
             raise TypeError(f"Given path points to a symlink, which is unsupported: {path}")
-        
+
         self._path = path.resolve(strict=True)
         stat = path.stat()
         self._size = stat.st_size
@@ -65,7 +63,7 @@ class FileMetadata:
     def as_sql_dict(self, include_hash: bool=False) -> dict:
         """
         Returns all metadata about the file as a dict.
-        
+
         This equates to creating a dict that stores every attribute of the
         object. Notably, the `path` key is represented by a string, not a
         `Path` object.
@@ -89,7 +87,7 @@ class FileMetadata:
         """The hash of the file as a `bytes` object."""
         if self._hash is not None:
             return self._hash
-        
+
         print(f"Hashing {self._path}...")
         sha = hashlib.sha256()
         with self._path.open(mode="rb") as f:
@@ -106,23 +104,23 @@ class FileMetadata:
     def path(self) -> Path:
         """The path of the file, as a `Path` object."""
         return self._path
-    
+
     @property
     def size(self) -> int:
         """The size of the file in bytes."""
         return self._size
-    
+
     @property
     def mtime(self) -> int:
         """The time of last modification of the file."""
         return self._mtime
-    
+
     @property
     def fs_id(self) -> int:
         """An int representing a unique ID for the filesystem the file is on."""
         if self._fs_id is not None:
             return self._fs_id
-        
+
         self._fs_id = utils.get_fsid(self._path)
         return self._fs_id
 
@@ -141,7 +139,7 @@ class DbFileMetadata(FileMetadata):
     def __init__(self, file_dict: dict) -> "DbFileMetadata":
         """
         Inits a `DbFileMetadata` object based upon values in given `file_dict`.
-        
+
         This class is the inverse of `FileMetadata.as_sql_dict`. Care should
         be given to ensure that all properties of the file's metadata are
         properly furnished in the given `file_dict`. See the attributes of

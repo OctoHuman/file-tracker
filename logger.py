@@ -39,7 +39,7 @@ class Logger:
             mirror_to_stdout:
               If `True`, writes all log entries to sys.stdout in addition to the
               usual log file.
-        
+
         Raises:
             FileExistsError:
               The `log_file` given already exists.
@@ -48,17 +48,17 @@ class Logger:
             raise TypeError("Log file must be of type path.")
         if log_file.exists():
             raise FileExistsError(f"Log file path already exists. Won't clobber. {log_file}")
-        
+
         self._mirror_to_stdout = bool(mirror_to_stdout)
         self._log_exception = bool(log_exception)
         self._closed = False
 
         self._fd = log_file.open(mode="xt", encoding="utf8")
         self._fd.write(f"[{get_time()}] START OF LOG\n")
-    
+
     def __enter__(self) -> "Logger":
         return self
-    
+
     def __exit__(self, exc_type, exc_value, traceback) -> None:
         if self._closed:
             return
@@ -74,16 +74,16 @@ class Logger:
         """Lets us write to log without any severity prefixes."""
         if self._closed:
             raise ValueError("Can't write to log because it is already closed.")
-        
+
         self._fd.write(f"[{get_time()}] {text}")
         if self._mirror_to_stdout or mirror_to_stdout:
             sys.stdout.write(text)
-    
+
     @property
     def mirror_to_stdout(self) -> bool:
         """A `bool` representing whether to write log entries to sys.stdout."""
         return self._mirror_to_stdout
-    
+
     @mirror_to_stdout.setter
     def mirror_to_stdout(self, value: bool) -> None:
         if not isinstance(value, bool):
@@ -93,17 +93,17 @@ class Logger:
     def log(self, text: str, **kwargs) -> None:
         """
         Logs text.
-        
+
         Arguments:
             mirror_to_stdout:
               See `Logger.mirror_to_stdout`.
         """
         self._write(text + "\n", **kwargs)
-    
+
     def warn(self, text: str, **kwargs) -> None:
         """
         Logs a warning.
-        
+
         Arguments:
             mirror_to_stdout:
               See `Logger.mirror_to_stdout`.
@@ -113,7 +113,7 @@ class Logger:
     def error(self, text: str, **kwargs) -> None:
         """
         Logs an error.
-        
+
         Arguments:
             mirror_to_stdout:
               See `Logger.mirror_to_stdout`.
@@ -124,7 +124,7 @@ class Logger:
         """Close the log file."""
         if self._closed:
             return
-        
+
         self._fd.write(f"[{get_time()}] END OF LOG\n")
         self._fd.close()
         self._closed = True

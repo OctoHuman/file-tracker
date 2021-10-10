@@ -10,9 +10,8 @@ from pathlib import Path
 import time
 from math import floor
 import json
-from file_metadata_db import FileMetadataDb
 import os
-import sys
+from file_metadata_db import FileMetadataDb
 import utils
 
 # Should this database track the inode of each file, therefore allowing detection of hardlinks pointing to the same file?
@@ -31,8 +30,6 @@ arg_parser.add_argument("--delete-fs", action="append", type=Path, help="Delete 
 
 args = arg_parser.parse_args()
 
-current_config = None
-
 def main():
     config_file = args.config_file
     create_new_config = args.new
@@ -41,7 +38,7 @@ def main():
     add_fs = args.register_fs
     remove_fs = args.delete_fs
 
-    if create_new_config and config_file.exists():    
+    if create_new_config and config_file.exists():
         raise FileExistsError("Tried to create new config file, but path given already exists. Won't clobber.")
     if not create_new_config and not config_file.is_file():
         raise FileNotFoundError("No file exists at given path.")
@@ -55,23 +52,23 @@ def main():
 
     if add_fs:
         add_filesystems(current_config, add_fs)
-    
+
     if remove_fs:
         remove_filesystems(current_config, remove_fs)
-    
+
     if new_db_path:
         update_database_path(current_config, new_db_path)
-    
+
     if new_log_folder:
         update_log_folder(current_config, new_log_folder)
-    
+
     current_config["config_last_changed"] = current_time()
     write_config(current_config, config_file)
 
 def add_filesystems(config: dict, add_fs: list[Path]) -> None:
     """
     Adds a new filesystem/directory to track to the config.
-    
+
     This is done by storing the path to the filesystem/directory, but also the
     unique filesystem ID, to ensure that if the given filesystem has a mount
     point on it that contains a different filesystem, it is possible to detect
@@ -102,7 +99,7 @@ def remove_filesystems(config: dict, remove_fs: list[Path]) -> None:
 def update_database_path(config: dict, database_path: Path) -> None:
     """
     Change the path to the file metadata database
-    
+
     Raises:
         ValueError:
           The `database_path` given points to something other than a file, or
@@ -115,10 +112,10 @@ def update_database_path(config: dict, database_path: Path) -> None:
 
     if not database_path.exists():
         create_new_database(database_path)
-    
+
     if not utils.is_sqlite_db(database_path):
         raise ValueError("New database path points to a non-database file.")
-    
+
     config["database"] = str(database_path.resolve(strict=True))
 
 def update_log_folder(config: dict, log_folder: Path) -> None:
@@ -135,7 +132,7 @@ def update_log_folder(config: dict, log_folder: Path) -> None:
 def read_config(config_file: Path) -> dict:
     """
     Read the config file at the given path. Returns the parsed JSON file.
-    
+
     Raises:
         ValueError:
           The parsed JSON file doesn't have the correct properties to be a valid
@@ -143,7 +140,7 @@ def read_config(config_file: Path) -> dict:
     """
     with config_file.open(mode="rt") as f:
         config = json.load(f)
-    
+
     try:
         config["config_last_changed"]
     except KeyError:
