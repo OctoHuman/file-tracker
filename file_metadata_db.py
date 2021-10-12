@@ -154,7 +154,7 @@ class FileMetadataDb:
         if cur.rowcount < 1:
             raise FileNotFoundError(f"Deleting file failed because it doesn't exist in the database: {file_metadata.path}")
 
-    def get_all_files(self) -> Generator[DbFileMetadata]:
+    def get_all_files(self) -> Generator[DbFileMetadata, None, None]:
         """Returns a generator that yields every file in the database."""
         # TODO: If no files are in the database, the break runs first, and None
         # is returned. This isn't consistent with the type hint, and could break
@@ -168,7 +168,9 @@ class FileMetadataDb:
             yield DbFileMetadata(file)
         cur.close()
 
-    def get_files_matching_hash(self, file_hash: bytes) -> Generator[DbFileMetadata]:
+    def get_files_matching_hash(self,
+                                file_hash: bytes
+                               ) -> Generator[DbFileMetadata, None, None]:
         """Finds all files in database that match given hash."""
         # TODO: If no files are in the database, the break runs first, and None
         # is returned. This isn't consistent with the type hint, and could break

@@ -60,7 +60,7 @@ def dump_database(path: Path) -> None:
 
 def walk_files(path: str | Path,
                error_handler: types.FunctionType
-              ) -> Generator[str]:
+              ) -> Generator[str, None, None]:
     """
     Simplifies `os.walk` into a function that only yields file paths.
 
