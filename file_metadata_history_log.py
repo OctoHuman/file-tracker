@@ -56,7 +56,7 @@ class FileMetadataHistoryLog:
     def __init__(self,
                  log_path: Path,
                  gzip_compress: bool=True
-                ) -> "FileMetadataHistoryLog":
+                ) -> None:
         """
         Creates a file metadata history logger.
 

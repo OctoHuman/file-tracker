@@ -31,7 +31,7 @@ class FileMetadataDb:
                  db_path: Path,
                  readonly: bool=True,
                  create_new_db: bool=False
-                ) -> "FileMetadataDb":
+                ) -> None:
         """
         Opens an existing database, or creates and initializes a new
         one.

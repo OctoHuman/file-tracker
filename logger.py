@@ -25,7 +25,7 @@ class Logger:
                  log_file: Path,
                  log_exception: bool=True,
                  mirror_to_stdout: bool=False
-                ) -> "Logger":
+                ) -> None:
         """
         Inits a Logger for the given `log_file`.
 

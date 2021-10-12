@@ -32,7 +32,7 @@ class FileMetadata:
           The filesystem ID that the file is stored on. This ID is unique per
           filesystem.
     """
-    def __init__(self, path: Path) -> "FileMetadata":
+    def __init__(self, path: Path) -> None:
         """
         Use given `Path` object to init FileMetadata object.
 
@@ -136,7 +136,7 @@ class DbFileMetadata(FileMetadata):
     Attributes:
         See `FileMetadata`'s attributes.
     """
-    def __init__(self, file_dict: dict) -> "DbFileMetadata":
+    def __init__(self, file_dict: dict) -> None:
         """
         Inits a `DbFileMetadata` object based upon values in given `file_dict`.
 
