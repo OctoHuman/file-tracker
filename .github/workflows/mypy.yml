@@ -22,4 +22,4 @@ jobs:
         pip install mypy
     - name: Analysing the code with Mypy
       run: |
-        mypy `ls -R|grep .py$|xargs`
+        mypy --show-error-codes `ls -R|grep .py$|xargs`
