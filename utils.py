@@ -75,6 +75,6 @@ def walk_files(path: str | Path,
         raise TypeError("error_handler must be a function.")
 
     for root, dirs, files in os.walk(path, onerror=error_handler):
-        root = Path(root)
+        root_path = Path(root)
         for file in files:
-            yield root.joinpath(file)
+            yield root_path.joinpath(file)
