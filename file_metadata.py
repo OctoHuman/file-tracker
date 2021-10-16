@@ -159,11 +159,11 @@ class DbFileMetadata(FileMetadata):
         if not isinstance(file_dict["fs_id"], int):
             raise TypeError("file_dict['fs_id'] wasn't of type int.")
 
-        self._path = Path(file_dict["path"])
-        self._hash = file_dict["hash"]
-        self._size = file_dict["size"]
-        self._mtime = file_dict["mtime"]
-        self._fs_id = file_dict["fs_id"]
+        self._path: Path = Path(file_dict["path"])
+        self._hash: bytes = file_dict["hash"]
+        self._size: int = file_dict["size"]
+        self._mtime: int = file_dict["mtime"]
+        self._fs_id: int = file_dict["fs_id"]
 
     # We should never need to calculate a hash from a DbFile
     @property
