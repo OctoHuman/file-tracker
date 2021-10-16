@@ -146,6 +146,19 @@ class DbFileMetadata(FileMetadata):
         properly furnished in the given `file_dict`. See the attributes of
         `FileMetadata` for a full list of what keys should exist on `file_dict`.
         """
+        if not isinstance(file_dict, dict):
+            raise TypeError("file_dict given wasn't of type dict.")
+        if not isinstance(file_dict["path"], str):
+            raise TypeError("file_dict['path'] wasn't a string.")
+        if not isinstance(file_dict["hash"], bytes):
+            raise TypeError("file_dict['hash'] wasn't of type bytes.")
+        if not isinstance(file_dict["size"], int):
+            raise TypeError("file_dict['size'] wasn't of type int.")
+        if not isinstance(file_dict["mtime"], int):
+            raise TypeError("file_dict['mtime'] wasn't of type int.")
+        if not isinstance(file_dict["fs_id"], int):
+            raise TypeError("file_dict['fs_id'] wasn't of type int.")
+
         self._path = Path(file_dict["path"])
         self._hash = file_dict["hash"]
         self._size = file_dict["size"]
