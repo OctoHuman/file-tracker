@@ -28,7 +28,7 @@ class FileMetadata:
         size:
           File size in bytes.
         mtime:
-          The files last mtime.
+          The files last mtime in nanoseconds.
         fs_id:
           The filesystem ID that the file is stored on. This ID is unique per
           filesystem.
@@ -57,7 +57,7 @@ class FileMetadata:
         self._path = path.resolve(strict=True)
         stat = path.stat()
         self._size = stat.st_size
-        self._mtime = stat.st_mtime
+        self._mtime = stat.st_mtime_ns
         self._hash: Optional[bytes] = None
         self._fs_id: Optional[int] = None
 
@@ -112,8 +112,8 @@ class FileMetadata:
         return self._size
 
     @property
-    def mtime(self) -> float:
-        """The time of last modification of the file."""
+    def mtime(self) -> int:
+        """The time of last modification of the file in nanoseconds."""
         return self._mtime
 
     @property
