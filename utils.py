@@ -3,9 +3,8 @@
 import re
 import sys
 import os
-import types
 from pathlib import Path
-from typing import Generator
+from typing import Callable, Generator
 
 SQL_SAFE_CHARS_REGEX = "^[A-z0-9-]{1,100}$"
 
@@ -59,8 +58,8 @@ def dump_database(path: Path) -> None:
     print("Done.")
 
 def walk_files(path: str | Path,
-               error_handler: types.FunctionType
-              ) -> Generator[str, None, None]:
+               error_handler: Callable
+              ) -> Generator[Path, None, None]:
     """
     Simplifies `os.walk` into a function that only yields file paths.
 

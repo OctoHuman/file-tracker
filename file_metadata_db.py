@@ -5,7 +5,7 @@ Handles creation and modification of file metadata in a centralized database.
 import sqlite3
 import sys
 from pathlib import Path
-from typing import Generator
+from typing import Generator, Optional
 from file_metadata import FileMetadata, DbFileMetadata
 
 class FileMetadataDb:
@@ -65,7 +65,7 @@ class FileMetadataDb:
         # Only resolve strictly when database already exists.
         self._db_path = Path(db_path).resolve(strict=not create_new_db)
         self._readonly = bool(readonly)
-        self._conn = None
+        self._conn: Optional[sqlite3.Connection]
         self._is_closed = False
 
         if create_new_db:

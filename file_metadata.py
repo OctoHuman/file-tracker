@@ -7,6 +7,7 @@ of a file's metadata.
 
 from pathlib import Path
 import hashlib
+from typing import Optional
 import utils
 
 CHUNK_SIZE = 64000000 #64MB
@@ -57,8 +58,8 @@ class FileMetadata:
         stat = path.stat()
         self._size = stat.st_size
         self._mtime = stat.st_mtime
-        self._hash = None
-        self._fs_id = None
+        self._hash: Optional[bytes] = None
+        self._fs_id: Optional[int] = None
 
     def as_sql_dict(self, include_hash: bool=False) -> dict:
         """
@@ -111,7 +112,7 @@ class FileMetadata:
         return self._size
 
     @property
-    def mtime(self) -> int:
+    def mtime(self) -> float:
         """The time of last modification of the file."""
         return self._mtime
 
