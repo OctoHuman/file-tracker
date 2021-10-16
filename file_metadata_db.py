@@ -3,6 +3,7 @@ Handles creation and modification of file metadata in a centralized database.
 """
 
 import sqlite3
+from sqlite3.dbapi2 import Connection
 import sys
 from pathlib import Path
 from typing import Generator, Optional
@@ -65,13 +66,12 @@ class FileMetadataDb:
         # Only resolve strictly when database already exists.
         self._db_path = Path(db_path).resolve(strict=not create_new_db)
         self._readonly = bool(readonly)
-        self._conn: Optional[sqlite3.Connection]
         self._is_closed = False
 
         if create_new_db:
-            self._bootstrap_new_db(db_path)
+            self._conn = self._bootstrap_new_db(db_path)
         else:
-            self._connect_to_existing_db(db_path)
+            self._conn = self._connect_to_existing_db(db_path)
 
         self._conn.row_factory = sqlite3.Row
 
@@ -201,7 +201,7 @@ class FileMetadataDb:
         self._conn.close()
         self._is_closed = True
 
-    def _bootstrap_new_db(self, db_path: Path) -> None:
+    def _bootstrap_new_db(self, db_path: Path) -> Connection:
         if self._readonly:
             raise ValueError("Can't create a new database while in read-only mode.")
         if db_path.exists():
@@ -220,15 +220,15 @@ class FileMetadataDb:
             );
         """)
         conn.commit()
-        self._conn = conn
+        return conn
 
-    def _connect_to_existing_db(self, db_path: Path) -> None:
+    def _connect_to_existing_db(self, db_path: Path) -> Connection:
         if not db_path.is_file():
             raise FileNotFoundError(f"Database path given doesn't exist: {db_path}")
         uri = db_path.as_uri()
         if self._readonly:
             uri += "?mode=ro"
-        self._conn = sqlite3.connect(uri, uri=True)
+        return sqlite3.connect(uri, uri=True)
 
     @property
     def db_path(self) -> str:
