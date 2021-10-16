@@ -65,8 +65,8 @@ class Logger:
 
         if exc_type and self._log_exception:
             tb = format_exception(exc_type, exc_value, traceback)
-            tb = "".join(tb)
-            self.error(tb)
+            tb_str = "".join(tb)
+            self.error(tb_str)
             self.error("Closing due to uncaught exception.")
         self.close()
 
