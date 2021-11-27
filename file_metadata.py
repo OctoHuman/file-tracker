@@ -104,7 +104,10 @@ class FileMetadata:
 
     @property
     def path(self) -> Path:
-        """The path of the file, as a `Path` object."""
+        """
+        The path of the file, as a `Path` object.
+        The path is always represented in absolute/resolved form.
+        """
         return self._path
 
     @property
