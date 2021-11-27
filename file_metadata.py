@@ -7,6 +7,7 @@ of a file's metadata.
 
 from pathlib import Path
 import hashlib
+import sqlite3
 from typing import Optional
 import utils
 
@@ -137,7 +138,7 @@ class DbFileMetadata(FileMetadata):
     Attributes:
         See `FileMetadata`'s attributes.
     """
-    def __init__(self, file_dict: dict) -> None:
+    def __init__(self, file_dict: dict | sqlite3.Row) -> None:
         """
         Inits a `DbFileMetadata` object based upon values in given `file_dict`.
 
@@ -146,8 +147,8 @@ class DbFileMetadata(FileMetadata):
         properly furnished in the given `file_dict`. See the attributes of
         `FileMetadata` for a full list of what keys should exist on `file_dict`.
         """
-        if not isinstance(file_dict, dict):
-            raise TypeError("file_dict given wasn't of type dict.")
+        if not isinstance(file_dict, dict) and not isinstance(file_dict, sqlite3.Row):
+            raise TypeError("file_dict given wasn't of type dict or sqlite3.Row.")
         if not isinstance(file_dict["path"], str):
             raise TypeError("file_dict['path'] wasn't a string.")
         if not isinstance(file_dict["hash"], bytes):
