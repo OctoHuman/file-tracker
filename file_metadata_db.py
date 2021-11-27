@@ -114,7 +114,7 @@ class FileMetadataDb:
     def add_file(self, file_metadata: FileMetadata) -> None:
         """Adds the file `file_metadata` to the database."""
         if self._readonly:
-            raise AssertionError("Can't add a new file while in read-only mode.")
+            raise RuntimeError("Can't add a new file while in read-only mode.")
         if not isinstance(file_metadata, FileMetadata):
             raise TypeError("File given isn't a FileMetadata object.")
 
@@ -126,7 +126,7 @@ class FileMetadataDb:
         Updates an existing file's metadata based on given `file_metadata`.
         """
         if self._readonly:
-            raise AssertionError("Can't update a file while in read-only mode.")
+            raise RuntimeError("Can't update a file while in read-only mode.")
         if not isinstance(file_metadata, FileMetadata):
             raise TypeError("File given isn't a FileMetadata object.")
 
@@ -143,7 +143,7 @@ class FileMetadataDb:
         `file_metadata`.
         """
         if self._readonly:
-            raise AssertionError("Can't remove a file while in read-only mode.")
+            raise RuntimeError("Can't remove a file while in read-only mode.")
         if not isinstance(file_metadata, FileMetadata):
             raise TypeError("File given isn't a FileMetadata object.")
 
