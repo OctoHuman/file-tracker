@@ -90,7 +90,7 @@ class FileMetadataDb:
 
         cur = self._conn.cursor()
         cur.execute("SELECT * FROM files WHERE path = :path", file_metadata.as_sql_dict())
-        result = cur.fetchone()
+        result: Optional[sqlite3.Row] = cur.fetchone()
         cur.close()
         if result is None:
             return None
@@ -107,7 +107,7 @@ class FileMetadataDb:
 
         cur = self._conn.cursor()
         cur.execute("SELECT 1 FROM files WHERE path = :path", file_metadata.as_sql_dict())
-        result = cur.fetchone()
+        result: Optional[sqlite3.Row] = cur.fetchone()
         cur.close()
         return result is not None
 
@@ -162,7 +162,7 @@ class FileMetadataDb:
         cur = self._conn.cursor()
         cur.execute("SELECT * FROM files")
         while True:
-            file = cur.fetchone()
+            file: Optional[sqlite3.Row] = cur.fetchone()
             if file is None:
                 break
             yield DbFileMetadata(file)
@@ -181,7 +181,7 @@ class FileMetadataDb:
         cur = self._conn.cursor()
         cur.execute("SELECT * FROM files WHERE hash = ?", (file_hash,))
         while True:
-            file = cur.fetchone()
+            file: Optional[sqlite3.Row] = cur.fetchone()
             if file is None:
                 break
             yield DbFileMetadata(file)
