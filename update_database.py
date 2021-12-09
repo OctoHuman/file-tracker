@@ -192,7 +192,7 @@ def log_change(history: FileMetadataHistoryLog,
 
 def log_permission_error(log: Logger, err: PermissionError) -> None:
     global files_error
-    log.error(f"Permission Error: {err}")
+    log.error(f"Permission Error: {err}", mirror_to_stdout=True)
     files_error += 1
 
 def validate_filesystem_mapping(filesystems: dict[str, int]) -> None:
