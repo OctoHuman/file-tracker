@@ -58,12 +58,19 @@ def main():
                 log.mirror_to_stdout = True
                 log.log("Finished updating database. Committing changes...")
                 db.commit()
+                log.log("Successfully commited changes to database.")
+            
+            log.log("Closing file history log...")
+        log.log("Sucessfully closed file history log.")
 
-            log.log(f"Files added: {files_added}")
-            log.log(f"Files updated: {files_updated}")
-            log.log(f"Files deleted: {files_deleted}")
-            log.log(f"Files skipped: {files_skipped}")
-            log.log(f"File errors: {files_error}")
+        log.log(f"Files added: {files_added}")
+        log.log(f"Files updated: {files_updated}")
+        log.log(f"Files deleted: {files_deleted}")
+        log.log(f"Files skipped: {files_skipped}")
+        log.log(f"File errors: {files_error}")
+
+        if files_error != 0:
+            log.warn(f"{files_error} FILE ERRORS OCCURED WHILE UPDATING DATABASE.")
 
 
 def register_new_files(db: FileMetadataDb,
