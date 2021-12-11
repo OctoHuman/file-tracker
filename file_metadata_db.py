@@ -237,7 +237,7 @@ class FileMetadataDb:
         else:
             cur.execute(query)
 
-        file: Optional[sqlite3.Row]
+        file: sqlite3.Row
         for file in cur:
             yield DbFileMetadata(file)
 
