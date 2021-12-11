@@ -105,9 +105,10 @@ class FileMetadata:
             # the mtime in the constructor, and actually running the `hash` function.
             # Without this protection, it is possible that a file is passed to this class,
             # gets the `mtime` attribute assigned, the files gets edited, and only then do we hash
-            # the newly edited file, while still retaining its old mtime. AFAICT, this doesn't
-            # necessarily have any big ramifications, but I think it is better to error out
-            # than to put known inaccurate info into the database.
+            # the newly edited file, while still retaining its old mtime. It is possible that
+            # the file was edited while we were hashing it, which could result in an invalid hash.
+            # AFAICT, this doesn't necessarily have any big ramifications, but I think it is better
+            # to error out than to put known inaccurate info into the database.
             if self._path.stat().st_mtime_ns != self._mtime:
                 raise RuntimeError("A program is editing files while we are scanning files. This can result in inconsistencies the database.")
 
