@@ -72,9 +72,9 @@ class FileMetadataDb:
         self._is_closed = False
 
         if create_new_db:
-            self._conn = self._bootstrap_new_db(db_path)
+            self._conn = self._bootstrap_new_db(self._db_path)
         else:
-            self._conn = self._connect_to_existing_db(db_path)
+            self._conn = self._connect_to_existing_db(self._db_path)
 
         self._conn.row_factory = sqlite3.Row
         self._conn.create_function("REGEXP", 2, FileMetadataDb._sql_regex, deterministic=True)
