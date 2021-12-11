@@ -2,12 +2,15 @@
 Handles creation and modification of file metadata in a centralized database.
 """
 
+import re
 import sqlite3
-from sqlite3.dbapi2 import Connection
 import sys
 from pathlib import Path
+from sqlite3.dbapi2 import Connection
 from typing import Generator, Optional
-from file_metadata import FileMetadata, DbFileMetadata
+
+from file_metadata import DbFileMetadata, FileMetadata
+
 
 class FileMetadataDb:
     """
@@ -74,6 +77,7 @@ class FileMetadataDb:
             self._conn = self._connect_to_existing_db(db_path)
 
         self._conn.row_factory = sqlite3.Row
+        self._conn.create_function("REGEXP", 2, FileMetadataDb._sql_regex, deterministic=True)
 
     def __enter__(self) -> "FileMetadataDb":
         return self
@@ -156,36 +160,31 @@ class FileMetadataDb:
 
     def get_all_files(self) -> Generator[DbFileMetadata, None, None]:
         """Returns a generator that yields every file in the database."""
-        # TODO: If no files are in the database, the break runs first, and None
-        # is returned. This isn't consistent with the type hint, and could break
-        # code expecting this to return a generator.
-        cur = self._conn.cursor()
-        cur.execute("SELECT * FROM files")
-        while True:
-            file: Optional[sqlite3.Row] = cur.fetchone()
-            if file is None:
-                break
-            yield DbFileMetadata(file)
-        cur.close()
+        yield from self._execute_and_yield_files("SELECT * FROM files")
 
     def get_files_matching_hash(self,
                                 file_hash: bytes
                                ) -> Generator[DbFileMetadata, None, None]:
         """Finds all files in database that match given hash."""
-        # TODO: If no files are in the database, the break runs first, and None
-        # is returned. This isn't consistent with the type hint, and could break
-        # code expecting this to return a generator.
         if not isinstance(file_hash, bytes):
             raise ValueError("Hash must be a bytes object.")
 
-        cur = self._conn.cursor()
-        cur.execute("SELECT * FROM files WHERE hash = ?", (file_hash,))
-        while True:
-            file: Optional[sqlite3.Row] = cur.fetchone()
-            if file is None:
-                break
-            yield DbFileMetadata(file)
-        cur.close()
+        yield from self._execute_and_yield_files(
+            "SELECT * FROM files WHERE hash = ?",
+            args=(file_hash,)
+        )
+
+    def get_files_matching_regex(self,
+                                 regex: re.Pattern
+                                ) -> Generator[DbFileMetadata, None, None]:
+        """Finds all files in database where their path matches given regex."""
+        #if not isinstance(regex, re.Pattern):
+        #    raise TypeError("Argument 'regex' must be of type re.Pattern.")
+
+        yield from self._execute_and_yield_files(
+            "SELECT * FROM files WHERE path REGEXP ?",
+            args=(regex,)
+        )
 
     def commit(self) -> None:
         """Commits all changes to database."""
@@ -200,6 +199,49 @@ class FileMetadataDb:
             print("WARNING: Closing database with unsaved transactions.", file=sys.stderr)
         self._conn.close()
         self._is_closed = True
+    
+    def _execute_and_yield_files(self,
+                                       query: str,
+                                       args: Optional[tuple]=None
+                                      ) -> Generator[DbFileMetadata, None, None]:
+        """
+        Helper function used to execute given `query`, and yield all files
+        returned as `DbFileMetadata` objects.
+        NOTE: This function only allows queries that begin with `SELECT *`.
+
+        Args:
+            query: SQL query to execute on this database.
+            args: A tuple of items to be substituted into any `?`s in the query.
+
+        Yields:
+            `DbFileMetadata` objects representing files that matched the given
+            query.
+        """
+        if not isinstance(query, str):
+            raise TypeError("Argument 'query' must be a string.")
+        if not isinstance(args, tuple) and args is not None:
+            raise TypeError("Argument 'args' must be a tuple or None.")
+
+        # This isn't foolproof, but it's a good start to preventing
+        # queries that could modify the database from being used with this
+        # function. In addition, we must ensure that the query selects all
+        # columns of the matching files, because if we are missing any
+        # properties than when we convert it to a `DbFileMetadata` object
+        # we will cause an exception.
+        if not query.lower().startswith("select * "):
+            raise ValueError("Query must begin with `SELECT * `.")
+
+        cur = self._conn.cursor()
+        if args is not None:
+            cur.execute(query, args)
+        else:
+            cur.execute(query)
+
+        file: Optional[sqlite3.Row]
+        for file in cur:
+            yield DbFileMetadata(file)
+
+        cur.close()
 
     def _bootstrap_new_db(self, db_path: Path) -> Connection:
         if self._readonly:
@@ -229,6 +271,18 @@ class FileMetadataDb:
         if self._readonly:
             uri += "?mode=ro"
         return sqlite3.connect(uri, uri=True)
+
+    @staticmethod
+    def _sql_regex(regex: str, item: str) -> bool:
+        """Handles the custom 'REGEXP' function registered on self._conn."""
+        if not isinstance(regex, str):
+            raise TypeError("Regex expression must be a string.")
+        if not isinstance(item, str):
+            raise TypeError("Regex must be applied to a string.")
+        try:
+            return re.match(regex, item) is not None
+        except re.error as err:
+            raise ValueError("Regex given to SQL query is invalid.")
 
     @property
     def db_path(self) -> str:
