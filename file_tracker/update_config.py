@@ -11,8 +11,8 @@ import time
 from math import floor
 import json
 import os
-from file_metadata_db import FileMetadataDb
-import utils
+from file_tracker.file_metadata_db import FileMetadataDb
+from file_tracker import utils
 
 # Should this database track the inode of each file, therefore allowing detection of hardlinks pointing to the same file?
 

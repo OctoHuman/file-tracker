@@ -9,7 +9,7 @@ from pathlib import Path
 from sqlite3.dbapi2 import Connection
 from typing import Generator, Optional
 
-from file_metadata import DbFileMetadata, FileMetadata
+from file_tracker.file_metadata import DbFileMetadata, FileMetadata
 
 
 class FileMetadataDb:
@@ -201,9 +201,9 @@ class FileMetadataDb:
         self._is_closed = True
     
     def _execute_and_yield_files(self,
-                                       query: str,
-                                       args: Optional[tuple]=None
-                                      ) -> Generator[DbFileMetadata, None, None]:
+                                 query: str,
+                                 args: Optional[tuple]=None
+                                ) -> Generator[DbFileMetadata, None, None]:
         """
         Helper function used to execute given `query`, and yield all files
         returned as `DbFileMetadata` objects.

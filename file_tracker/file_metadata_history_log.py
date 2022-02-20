@@ -11,7 +11,7 @@ Attributes:
 from pathlib import Path
 import csv
 import gzip
-from file_metadata import FileMetadata
+from file_tracker.file_metadata import FileMetadata
 
 _CSV_HEADER = ["action", "reason", "path", "new_hash"]
 

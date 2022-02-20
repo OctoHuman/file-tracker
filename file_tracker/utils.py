@@ -43,7 +43,7 @@ def get_fsid(path: Path) -> int:
 
 def dump_database(path: Path) -> None:
     """Dumps the contents of a `FileMetadataDb` into stdout as a table."""
-    from file_metadata_db import FileMetadataDb
+    from file_tracker.file_metadata_db import FileMetadataDb
     path = Path(path)
     print("Path".ljust(80) + " | " + "Hash".ljust(64) + " | " + "Size".ljust(10) + " | " + "mtime".ljust(18) + " | " + "fs_id".ljust(10))
     with FileMetadataDb(path) as db:

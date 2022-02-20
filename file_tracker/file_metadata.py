@@ -9,7 +9,7 @@ from pathlib import Path
 import hashlib
 import sqlite3
 from typing import Optional
-import utils
+from file_tracker import utils
 
 CHUNK_SIZE = 64000000 #64MB
 
