@@ -66,6 +66,9 @@ class FileMetadataDb:
               exists at given `db_path`.
         """
 
+        if not isinstance(db_path, Path) and not isinstance(db_path, str):
+            raise TypeError("db_path must be either a string or Path object.")
+
         # Only resolve strictly when database already exists.
         self._db_path = Path(db_path).resolve(strict=not create_new_db)
         self._readonly = bool(readonly)
@@ -117,6 +120,9 @@ class FileMetadataDb:
 
     def add_file(self, file_metadata: FileMetadata) -> None:
         """Adds the file `file_metadata` to the database."""
+        # TODO: Should we catch the case if we insert an already existing
+        # file into the database again? If we try, _conn.execute raises
+        # sqlite3.IntegrityError: UNIQUE constraint failed: files.path
         if self._readonly:
             raise RuntimeError("Can't add a new file while in read-only mode.")
         if not isinstance(file_metadata, FileMetadata):
@@ -169,6 +175,10 @@ class FileMetadataDb:
         if not isinstance(file_hash, bytes):
             raise ValueError("Hash must be a bytes object.")
 
+        #TODO: We enforce the hash size here, but not on add_file.
+        if len(file_hash) != 32:
+            raise ValueError("Hash must be exactly 32 bytes (SHA256).")
+
         yield from self._execute_and_yield_files(
             "SELECT * FROM files WHERE hash = ?",
             args=(file_hash,)
@@ -199,7 +209,7 @@ class FileMetadataDb:
             print("WARNING: Closing database with unsaved transactions.", file=sys.stderr)
         self._conn.close()
         self._is_closed = True
-    
+
     def _execute_and_yield_files(self,
                                  query: str,
                                  args: Optional[tuple]=None
