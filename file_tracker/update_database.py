@@ -8,11 +8,11 @@ import time
 from argparse import ArgumentParser
 from pathlib import Path
 
-from logger import Logger
-import utils
-from file_metadata import FileMetadata
-from file_metadata_db import FileMetadataDb
-from file_metadata_history_log import FileMetadataHistoryLog
+from file_tracker.logger import Logger
+import file_tracker.utils
+from file_tracker.file_metadata import FileMetadata
+from file_tracker.file_metadata_db import FileMetadataDb
+from file_tracker.file_metadata_history_log import FileMetadataHistoryLog
 
 arg_parser = ArgumentParser(
                                 description="Scans filesystem and updates file metadata database."
