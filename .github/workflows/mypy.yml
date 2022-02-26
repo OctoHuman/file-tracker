@@ -23,4 +23,4 @@ jobs:
     - name: Analysing the code with Mypy
       run: |
         shopt -s globstar
-        mypy --show-error-codes file_tracker/**.py
+        mypy --show-error-codes file_tracker/
