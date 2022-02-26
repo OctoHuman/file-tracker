@@ -22,4 +22,5 @@ jobs:
         pip install mypy
     - name: Analysing the code with Mypy
       run: |
-        mypy --show-error-codes `ls -R|grep .py$|xargs`
+        shopt -s globstar
+        mypy --show-error-codes file_tracker/**.py
