@@ -9,7 +9,7 @@ from argparse import ArgumentParser
 from pathlib import Path
 
 from file_tracker.logger import Logger
-import file_tracker.utils
+import file_tracker.utils as utils
 from file_tracker.file_metadata import FileMetadata
 from file_tracker.file_metadata_db import FileMetadataDb
 from file_tracker.file_metadata_history_log import FileMetadataHistoryLog
