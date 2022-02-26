@@ -62,6 +62,16 @@ class FileMetadata:
         self._hash: Optional[bytes] = None
         self._fs_id: Optional[int] = None
 
+    def __eq__(self, other):
+        if not isinstance(other, FileMetadata):
+            return False
+        
+        return (self.path == other.path
+                and self.size == other.size
+                and self.mtime == other.mtime
+                and self.fs_id == other.fs_id
+                and self.hash == other.hash)
+
     def as_sql_dict(self, include_hash: bool=False) -> dict:
         """
         Returns all metadata about the file as a dict.
