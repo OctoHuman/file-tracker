@@ -1,0 +1,57 @@
+[
+    {
+        "path": "tests/resources/common/test_files/folder1/folder with spaces/file with spaces.txt",
+        "hash": "4bea3e0214a5d4ff2b9cf9badb4d007b079d649a85117a74f1e04d47a875abbe",
+        "size": 15,
+        "mtime": 1582202096000000000,
+        "fs_id": 123
+    },
+    {
+        "path": "tests/resources/common/test_files/file with spaces 2.txt",
+        "hash": "4bea3e0214a5d4ff2b9cf9badb4d007b079d649a85117a74f1e04d47a875abbe",
+        "size": 15,
+        "mtime": 1582202096000000000,
+        "fs_id": 123
+
+    },
+    {
+        "path": "tests/resources/common/test_files/folder1/abc",
+        "hash": "2595d33ca892fdff569c86f5e0b482849aaf94b251c23b918962093d0cc81275",
+        "size": 8,
+        "mtime": 2211667199000000000,
+        "fs_id": 123
+
+    },
+    {
+        "path": "tests/resources/common/test_files/folder2/blank.txt",
+        "hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "size": 0,
+        "mtime": 694137600000000000,
+        "fs_id": 123
+
+    },
+    {
+        "path": "tests/resources/common/test_files/folder2/notblank.txt",
+        "hash": "9834876dcfb05cb167a5c24953eba58c4ac89b1adf57f28f2f9d09af107ee8f0",
+        "size": 3,
+        "mtime": 1659949811000000000,
+        "fs_id": 123
+
+    },
+    {
+        "path": "tests/resources/common/test_files/file1.txt",
+        "hash": "b3bb3ed1d10084f64a6fe74da70b807f855a7ffc8f85aeb3804b8ef40b9991b7",
+        "size": 39,
+        "mtime": 1645312087771000000,
+        "fs_id": 123
+
+    },
+    {
+        "path": "tests/resources/common/test_files/file2.txt",
+        "hash": "b1ab25c55913c95cc6913f1dbce9bef185ebf00a64553a8ef194193e52ea5015",
+        "size": 9,
+        "mtime": 1645312127724000000,
+        "fs_id": 123
+
+    }
+]
